@@ -28,7 +28,7 @@ def convert_to_skopt_space(params_dict):
     skopt_space = {}
     search_space = params_dict.get('search_space', {})
 
-    if isinstance(search_space, list):  # 리스트로 정의된 경우
+    if isinstance(search_space, list):
         for param_set in search_space:
             for key, value in param_set.items():
                 if value['type'] == 'Real':
@@ -39,7 +39,7 @@ def convert_to_skopt_space(params_dict):
                     skopt_space[key] = Categorical(value['categories'])
                 else:
                     print(f"Warning: Unrecognized type {value['type']} for parameter {key}")
-    elif isinstance(search_space, dict):  # 딕셔너리로 정의된 경우
+    elif isinstance(search_space, dict):
         for key, value in search_space.items():
             if value['type'] == 'Real':
                 skopt_space[key] = Real(value['low'], value['high'], prior=value.get('prior', 'uniform'))

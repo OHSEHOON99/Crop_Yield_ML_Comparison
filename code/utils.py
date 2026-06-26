@@ -4,19 +4,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-# 최적의 하이퍼파라미터를 로드하는 함수
 def load_best_params(csv_path):
-    # CSV 파일 로드
     df = pd.read_csv(csv_path)
     
-    # 첫 번째 행을 딕셔너리로 변환
     best_params = df.iloc[0].to_dict()
     
-    # 값의 형식을 적절히 변환
     for key, value in best_params.items():
-        if pd.isna(value):  # NaN 값을 None으로 변환
+        if pd.isna(value):
             best_params[key] = None
-        elif isinstance(value, float) and value.is_integer():  # 정수형 실수를 정수로 변환
+        elif isinstance(value, float) and value.is_integer():
             best_params[key] = int(value)
         else:
             best_params[key] = value
@@ -122,11 +118,9 @@ def plot_results(selected_years, results_df, region_names, metric_name):
 
     
 def plot_avg_metric_by_region(selected_years, results_df, region_names, metric_name=None):
-    # `metric_name`을 명시적으로 전달하도록 하고, 기본값을 None으로 설정
     if metric_name is None:
         raise ValueError("metric_name must be provided")
     
-    # 특정 메트릭에 대한 정보를 계산하여 지역별로 평균 계산
     avg_metric_by_region = []
     for region in region_names:
         region_results = results_df[(results_df['region_name'] == region) & (results_df['year'].isin(selected_years))]
@@ -148,41 +142,32 @@ def plot_avg_metric_by_region(selected_years, results_df, region_names, metric_n
         
         avg_metric_by_region.append(np.mean(metric_values))
     
-    # 시각화를 위한 준비
     x = np.arange(len(region_names))
     plt.figure(figsize=(12, 8))
     
-    # 막대 그래프 생성
     plt.bar(x, avg_metric_by_region, color='skyblue')
     
-    # 그래프 레이블 및 제목 설정
     plt.xlabel('Region')
     plt.ylabel(f'Average {metric_name}')
     plt.title(f'Average {metric_name} by Region for Selected Years: {selected_years}')
     plt.xticks(x, region_names, rotation=90)
     
-    # 그래프 보여주기
     plt.tight_layout()
     plt.show()
 
 
 def plot_yield_estimation(results_df):
-    # y_test와 y_pred가 리스트나 문자열로 저장되어 있다면 float으로 변환
     results_df['y_test'] = results_df['y_test'].apply(lambda x: float(x) if isinstance(x, (list, str)) else x)
     results_df['y_pred'] = results_df['y_pred'].apply(lambda x: float(x) if isinstance(x, (list, str)) else x)
 
-    # 연도별 y_test와 y_pred의 평균 계산
     mean_yields_by_year = results_df.groupby('year')[['y_test', 'y_pred']].mean().reset_index()
 
-    # 그래프 생성
     fig, ax1 = plt.subplots(figsize=(12, 8))
 
-    # 실제 수확량과 예측 수확량을 막대 그래프로 시각화
     width = 0.4
     ax1.bar(mean_yields_by_year['year'] - width/2, mean_yields_by_year['y_test'], width=width, align='center', label='Actual Yield')
     ax1.bar(mean_yields_by_year['year'] + width/2, mean_yields_by_year['y_pred'], width=width, align='center', label='Predicted Yield')
 
-    # x축 설정
     ax1.set_xticks(mean_yields_by_year['year'])
     ax1.set_xticklabels(mean_yields_by_year['year'].astype(int))
 
@@ -190,7 +175,6 @@ def plot_yield_estimation(results_df):
     ax1.set_ylabel('Yield (centner/ha)')
     ax1.tick_params(axis='y')
 
-    # 범례 추가
     ax1.legend(loc='upper left')
 
     plt.title('Ukraine Wheat Yield Estimation')
@@ -202,11 +186,9 @@ def scatterplot_visualization(df, title):
     plt.figure(figsize=(8, 8))
     plt.scatter(df['y_test'], df['y_pred'], alpha=0.5)
     
-    # y=x 직선 추가 (범례 없이)
     max_val = max(df['y_test'].max(), df['y_pred'].max()) + 10
     plt.plot([0, max_val], [0, max_val], color='green', linestyle='--')
     
-    # 축 범위 설정 (최소값 0)
     plt.xlim(0, max_val)
     plt.ylim(0, max_val)
     
@@ -214,10 +196,8 @@ def scatterplot_visualization(df, title):
     plt.ylabel('Predicted Values (y_pred)')
     plt.title(f'Scatter Plot of {title} Yield Estimation')
     
-    # 상관관계 계산
     correlation = df['y_test'].corr(df['y_pred'])
     
-    # 상관관계 출력
     plt.text(0, max_val * 0.95, f'Correlation: {correlation:.2f}', color='red', fontsize=12)
     
     plt.grid(True)

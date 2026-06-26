@@ -5,12 +5,11 @@ from sklearn.preprocessing import MinMaxScaler
 
 class CropYieldDataLoader:
     def __init__(self, target_region, combined_file_path, crop_yield_file_path):
-        self.target_region = sorted(target_region)  # 알파벳 순서로 정렬
+        self.target_region = sorted(target_region)
         self.combined_file_path = combined_file_path
         self.crop_yield_file_path = crop_yield_file_path
-        self.n_regions = len(self.target_region)  # target_region 리스트의 길이로 n_regions 설정
+        self.n_regions = len(self.target_region)
 
-        # 데이터를 저장할 인스턴스 변수 초기화
         self.X = None
         self.y = None
         self.X_selected = None
@@ -23,22 +22,18 @@ class CropYieldDataLoader:
         combined_df = pd.read_csv(self.combined_file_path)
         available_regions = combined_df['region_name'].unique()
         self.target_region = [region for region in self.target_region if region in available_regions]
-        self.n_regions = len(self.target_region)  # available_regions를 기반으로 n_regions 업데이트
+        self.n_regions = len(self.target_region)
 
-        # 연도 추출 및 인스턴스화
         self.all_years = sorted(combined_df['year'].unique())
 
-        # 지표들을 ERA5-Land와 MODIS로 분류 및 정렬
         era5_land_indicators = ['t2m', 'stl1', 'stl2', 'ssr', 'tp', 'swvl1', 'swvl2']
         modis_indicators = ['NDVI', 'EVI', 'LST_Day', 'LST_Night', 'LAI', 'FPAR']
 
-        # 실제 CSV 파일에서 존재하는 지표만 필터링
         available_indicators = combined_df.columns.difference(['region_name', 'year', 'month'])
 
         era5_land_indicators = sorted([ind for ind in era5_land_indicators if ind in available_indicators])
         modis_indicators = sorted([ind for ind in modis_indicators if ind in available_indicators])
 
-        # 지표를 ERA5-Land -> MODIS 순으로 정렬
         ordered_indicators = era5_land_indicators + modis_indicators
         print("Indicators:")
         for ind in ordered_indicators:
@@ -102,20 +97,17 @@ class CropYieldDataLoader:
         return y
 
     def filter_years(self, selected_years):
-        """특정 연도를 선택하여 데이터 필터링"""
+        """Filter loaded arrays to the selected years."""
         if self.X is None or self.y is None:
             raise ValueError("Data not loaded. Please run load_data() first.")
         
-        # selected_years를 인스턴스화
         self.selected_years = selected_years
         
-        # 연도에 맞는 인덱스 필터링
         expanded_years = np.repeat(self.all_years, self.n_regions)
         selected_indices = np.isin(expanded_years, self.selected_years)
         self.X_selected = self.X[selected_indices]
         self.y_selected = self.y[selected_indices]
 
-        # 선택된 연도 출력 및 데이터 shape 출력
         print(f"Selected years: {self.selected_years}")
         print("Filtered Data Shape (X_selected):", self.X_selected.shape)
         print("Filtered Data Shape (y_selected):", self.y_selected.shape)
