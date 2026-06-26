@@ -30,24 +30,6 @@ The comparison covers six regression models:
 
 The default experiment uses 21 Ukrainian regions, March-to-October monthly features, and leave-one-year-out evaluation.
 
-## Installation
-
-Use a virtual environment, then install the project dependencies:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-For notebook work:
-
-```bash
-jupyter lab
-```
-
-Open notebooks from the repository root so the relative paths resolve as expected.
-
 ## Data
 
 The repository includes two compact processed CSV files:
@@ -74,7 +56,14 @@ The main modeling workflow is in:
 notebooks/modeling/training.ipynb
 ```
 
-The notebook loads:
+To rerun the modeling notebook, install the dependencies and open Jupyter from the repository root:
+
+```bash
+pip install -r requirements.txt
+jupyter lab notebooks/modeling/training.ipynb
+```
+
+The workflow loads:
 
 ```text
 data/processed/combined_data.csv
@@ -98,7 +87,3 @@ Each experiment folder contains:
 - `*_metrics.csv`: yearly and aggregate metrics
 - `*_results.csv`: true and predicted yield by region and year
 - `hyperparams/*_best_params.csv`: selected model hyperparameters
-
-## Notes
-
-Preprocessing notebooks are kept as supplementary material because the raw geospatial workflow depends on external files and local compute environment details. The modeling code and compact processed data are the recommended entry point for reviewing or rerunning the machine learning comparison.
