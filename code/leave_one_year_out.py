@@ -1,5 +1,10 @@
-from utils import *
+import os
+
+import numpy as np
+import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+
+from utils import load_best_params, plot_avg_metric_by_region, plot_results, plot_yield_estimation
 
 
 years = np.arange(2010, 2023 + 1)
@@ -111,12 +116,17 @@ def calculate_metrics_from_df(results_df, output_csv_path='metric.csv'):
     metrics_df = pd.DataFrame(metrics_list)
 
     # Save the DataFrame to a CSV file
+    output_dir = os.path.dirname(output_csv_path)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
     metrics_df.to_csv(output_csv_path, index=False)
 
     return metrics_df
 
 
 def yield_prediction(estimator, params_path, model_name, metric_name, X_selected, y_selected, target_region, selected_years, result_save_path):
+    os.makedirs(result_save_path, exist_ok=True)
+
     csv_path = f'{params_path}/{model_name}_best_params.csv'
     # Best Parameters 로드
     best_params = load_best_params(csv_path)

@@ -11,9 +11,7 @@ from sklearn.neighbors import KNeighborsRegressor
 from skopt import BayesSearchCV
 from skopt.space import Real, Integer, Categorical
 
-# Custom modules
-from scorer import *
-from utils import *
+from scorer import custom_scorer
 
 
 # Load all YAML files from a directory
@@ -78,7 +76,9 @@ def clean_and_convert_params(params):
     return cleaned_params
 
 # Perform BayesSearchCV for each model
-def run_bayes_search(X, y, param_spaces, output_dir, scoring_function):
+def run_bayes_search(X, y, param_spaces, output_dir, scoring_function, n_regions=21):
+    os.makedirs(output_dir, exist_ok=True)
+
     for model_name, search_space in param_spaces.items():
         print(f"Running BayesSearchCV for {model_name.upper()}...")
         skopt_space = convert_to_skopt_space(search_space)
@@ -94,7 +94,7 @@ def run_bayes_search(X, y, param_spaces, output_dir, scoring_function):
         bayes_search = BayesSearchCV(
             estimator=model_class(),
             search_spaces=skopt_space,
-            scoring=lambda estimator, X, y: custom_scorer(estimator, X, y, scoring_function),
+            scoring=lambda estimator, X, y: custom_scorer(estimator, X, y, scoring_function, n_regions=n_regions),
             n_jobs=-1,
             verbose=1,
             n_iter=50,
