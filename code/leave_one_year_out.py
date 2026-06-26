@@ -9,31 +9,26 @@ from utils import load_best_params, plot_avg_metric_by_region, plot_results, plo
 
 years = np.arange(2010, 2023 + 1)
 
-# 2. leave_one_year_out
-# y_pred와 y_test를 반환
+
 def leave_one_year_out(X, y, estimator, params, region_names, selected_years=None):
     results_list = []
     n_regions = len(region_names)
 
     if selected_years is None:
-        selected_years = years  # 모든 연도 선택
+        selected_years = years
     
     for i, test_year in enumerate(selected_years):
-        # 테스트 세트와 학습 세트 분리
         test_index = np.arange(i * n_regions, (i + 1) * n_regions)
         train_index = np.setdiff1d(np.arange(len(y)), test_index)
         
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
         
-        # 모델 생성 및 학습
         regressor = estimator(**params)
         regressor.fit(X_train, y_train)
         
-        # 테스트 세트에 대한 예측
         y_pred = regressor.predict(X_test)
         
-        # 지역별 결과를 리스트에 추가
         for j in range(len(test_index)):
             region_name = region_names[j % n_regions]
             y_test_region = y_test[j]
@@ -128,17 +123,13 @@ def yield_prediction(estimator, params_path, model_name, metric_name, X_selected
     os.makedirs(result_save_path, exist_ok=True)
 
     csv_path = f'{params_path}/{model_name}_best_params.csv'
-    # Best Parameters 로드
     best_params = load_best_params(csv_path)
     print("Best Parameters:", best_params)
 
-    # Leave-One-Year-Out 교차 검증을 통해 y_test와 y_pred를 얻음
     results_df = leave_one_year_out(X_selected, y_selected, estimator, best_params, target_region, selected_years)
 
-    # Metrics 계산
     metrics_df = calculate_metrics_from_df(results_df, output_csv_path=f'{result_save_path}/{model_name}_metrics.csv')
 
-    # Metrics 출력
     print("Metrics for each year:")
     print(metrics_df)
     print('-' * 65)
@@ -148,14 +139,10 @@ def yield_prediction(estimator, params_path, model_name, metric_name, X_selected
     print("Average MSE:", metrics_df.loc[metrics_df['year'] == 'total', 'MSE'].values[0])
     print("Average MAPE:", metrics_df.loc[metrics_df['year'] == 'total', 'MAPE'].values[0])
 
-    # 결과를 CSV 파일로 저장
     results_df.to_csv(f'{result_save_path}/{model_name}_results.csv', index=False)
 
-    # 시각화: 연도별로 실제값, 예측값, 그리고 선택된 메트릭을 시각화
     plot_results(selected_years, results_df, target_region, metric_name=metric_name)
 
-    # 시각화: 지역별로 평균 메트릭을 시각화
     plot_avg_metric_by_region(selected_years, results_df, target_region, metric_name=metric_name)
 
-    # 전체 결과를 바탕으로 수확량 예측 시각화
     plot_yield_estimation(results_df)
