@@ -16,9 +16,8 @@ def rrmse_scorer(y_true, y_pred):
     return rrmse
 
 
-def full_scorer(estimator, X, y, scoring_function):
+def full_scorer(estimator, X, y, scoring_function, n_regions=21):
     total_samples = len(y)
-    n_regions = 21  # Assuming each year has 21 regions
     n_years = total_samples // n_regions
     
     scores = []
@@ -40,5 +39,5 @@ def full_scorer(estimator, X, y, scoring_function):
 
 
 # Wrapper function for BayesSearchCV
-def custom_scorer(estimator, X, y, scoring_function):
-    return -full_scorer(estimator, X, y, scoring_function)
+def custom_scorer(estimator, X, y, scoring_function, n_regions=21):
+    return -full_scorer(estimator, X, y, scoring_function, n_regions=n_regions)

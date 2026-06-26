@@ -1,86 +1,104 @@
-# **Ukraine Crop Yield Estimation Using Machine Learning**
+# Ukraine Crop Yield Estimation with Machine Learning
 
----
+This repository contains code, notebooks, processed tabular data, and curated experiment outputs for estimating regional wheat yield in Ukraine using MODIS-derived vegetation variables, ERA5-Land weather variables, and machine learning regressors.
 
-## **Project Overview**
+The workflow adapts the county-level crop yield prediction methodology from:
 
-This project focuses on **estimating wheat crop yield in Ukraine** using **MODIS-based variables** and **weather data**, comparing the performance of various machine learning algorithms. The methodology is adapted from the following research paper:
+Ju, S., Lim, H., Ma, J. W., Kim, S., Lee, K., Zhao, S., & Heo, J. (2021). Optimal county-level crop yield prediction using MODIS-based variables and weather data: A comparative study on machine learning models. Agricultural and Forest Meteorology, 307, 108530. https://doi.org/10.1016/j.agrformet.2021.108530
 
-**Ju, S., Lim, H., Ma, J. W., Kim, S., Lee, K., Zhao, S., & Heo, J. (2021). Optimal county-level crop yield prediction using MODIS-based variables and weather data: A comparative study on machine learning models. Agricultural and Forest Meteorology, 307, 108530.**  
-[DOI: 10.1016/j.agrformet.2021.108530](https://doi.org/10.1016/j.agrformet.2021.108530)
+## What Is Included
 
-While the original paper focuses on **county-level crop yield prediction in the United States**, this project targets **Ukraine**, using wheat as the primary crop. The methodology, data preprocessing, and feature selection have been adjusted accordingly.
+- `code/`: reusable Python modules for data loading, Bayesian hyperparameter search, leave-one-year-out evaluation, scoring, and plotting
+- `notebooks/`: supplementary preprocessing and modeling notebooks with outputs cleared
+- `data/processed/`: compact processed CSV files used by the modeling workflow
+- `configs/search_spaces/`: Bayesian optimization search spaces for each model
+- `results/`: curated model metrics, predictions, and selected best hyperparameters
+- `DATA_POLICY.md`: data provenance and artifact scope for public use
 
----
+Large raw geospatial/weather files and intermediate extraction outputs are represented by the documented workflow rather than stored directly in this repository.
 
-## **Research Objective**
+## Models
 
-- **Predict wheat yield at a regional level in Ukraine.**
-- **Compare the performance of six machine learning algorithms** for yield estimation:
-  1. **Support Vector Regression (SVR)**
-  2. **Random Forest Regressor (RF)**
-  3. **Gradient Boosting Regressor (GB)**
-  4. **eXtreme Gradient Boosting (XGB)**
-  5. **Decision Tree Regressor (DT)**
-  6. **K-Nearest Neighbors Regressor (KNN)**
-- Analyze and identify the most suitable machine learning algorithm for yield prediction in Ukraine.
+The comparison covers six regression models:
 
----
+- Support Vector Regression
+- Random Forest Regressor
+- Gradient Boosting Regressor
+- XGBoost Regressor
+- Decision Tree Regressor
+- K-Nearest Neighbors Regressor
 
-## **Data Description**
+The default experiment uses 21 Ukrainian regions, March-to-October monthly features, and leave-one-year-out evaluation.
 
-### **1. MODIS Data**
+## Installation
 
-The following MODIS-based variables were used as features:
+Use a virtual environment, then install the project dependencies:
 
-- **NDVI**: Normalized Difference Vegetation Index  
-- **EVI**: Enhanced Vegetation Index  
-- **LST (Day & Night)**: Land Surface Temperature  
-- **FPAR**: Fraction of Photosynthetically Active Radiation  
-- **LAI**: Leaf Area Index  
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
 
-These variables were preprocessed using weighted monthly averages, computed over different resolutions (250m, 500m, and 1000m), depending on the variable.
+For notebook work:
 
-### **2. Weather Data (ERA5 Land)**
+```bash
+jupyter lab
+```
 
-The following weather variables were extracted from ERA5 Land data:
+Open notebooks from the repository root so the relative paths resolve as expected.
 
-- **2m Temperature (t2m)**  
-- **Soil Temperature (stl1, stl2)**  
-- **Surface Solar Radiation (ssr)**  
-- **Total Precipitation (tp)**  
-- **Volumetric Soil Water (swvl1, swvl2)**  
+## Data
 
----
+The repository includes two compact processed CSV files:
 
-## **Methodology**
+- `data/processed/combined_data.csv`: regional monthly MODIS and ERA5-Land features for 2010-2023
+- `data/processed/crop_yield.csv`: regional crop yield table for 2010-2023
 
-### **Step 1: Data Preprocessing**
+Raw and intermediate files used to produce these tables can be placed locally under:
 
-1. **MODIS Data Preprocessing**  
-   - Monthly weighted averages of MODIS variables were computed.
-   - The data was organized into regional-level time series, covering the growing season from March to October (2010–2023).
+```text
+data/external/
+data/raw/
+data/intermediate/
+outputs/
+```
 
-2. **ERA5 Land Data Preprocessing**  
-   - Weather data was extracted and aggregated on a monthly basis for each region.
+See `DATA_POLICY.md` for source and artifact details.
 
-### **Step 2: Model Training and Evaluation**
+## Modeling Workflow
 
-- Six different machine learning algorithms were trained on the preprocessed data:
-  1. **SVR**  
-  2. **Random Forest**  
-  3. **Gradient Boosting**  
-  4. **XGBoost**  
-  5. **Decision Tree**  
-  6. **KNN**
+The main modeling workflow is in:
 
-- The models were evaluated based on **Mean Absolute Error (MAE)** and **R-squared (R²)** metrics.
+```text
+notebooks/modeling/training.ipynb
+```
 
----
+The notebook loads:
 
-## **Results**
+```text
+data/processed/combined_data.csv
+data/processed/crop_yield.csv
+configs/search_spaces/*.yaml
+```
 
-- The comparison of model performance showed that the **Random Forest Regressor (RF)** and **XGBoost (XGB)** performed the best for wheat yield prediction in Ukraine.
-- Detailed results can be found in the [results](results/) folder.
+and writes refreshed local outputs to `results/` or `outputs/`, depending on whether you are reproducing the curated result tables or generating exploratory artifacts.
 
----
+## Results
+
+Curated result tables are available in:
+
+```text
+results/11_20/
+results/12_20/
+```
+
+Each experiment folder contains:
+
+- `*_metrics.csv`: yearly and aggregate metrics
+- `*_results.csv`: true and predicted yield by region and year
+- `hyperparams/*_best_params.csv`: selected model hyperparameters
+
+## Notes
+
+Preprocessing notebooks are kept as supplementary material because the raw geospatial workflow depends on external files and local compute environment details. The modeling code and compact processed data are the recommended entry point for reviewing or rerunning the machine learning comparison.

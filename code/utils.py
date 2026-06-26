@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-from utils import *
-from scorer import *
-
 
 # 최적의 하이퍼파라미터를 로드하는 함수
 def load_best_params(csv_path):
